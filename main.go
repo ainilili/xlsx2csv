@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -17,7 +19,17 @@ var delimiter = flag.String("d", ";", "Delimiter to use between fields")
 type outputer func(s string)
 
 func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outputer) error {
-	xlFile, error := xlsx.OpenFile(excelFileName)
+	resp, err := http.Get("https://polaris-hd2.oss-cn-shanghai.aliyuncs.com/test/testfile.xlsx")
+	if err != nil{
+		fmt.Println(err)
+	}
+
+	resBody := resp.Body
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resBody)
+
+	xlFile, error := xlsx.OpenBinary(buf.Bytes())
+	//xlFile, error := xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
 	}
